@@ -1,2 +1,28 @@
 # mk-image
-Tool to create bootable IIAB ubuntu images on RPi hardware, aimed at 64bit ubuntu as the host building 64bit images. 
+Tool to create bootable IIAB Ubuntu images on RPi hardware, aimed at arm64 Ubuntu as the host building arm64 images with IIAB pre-configured.
+
+How to use:
+mkarm-image <size of image in GB> <path to downloaded.img.xz> <path to place the product and name of image>
+
+./mkarm-image.sh 4 ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz /mnt/img/pipeline-iiab-ubuntu-21.04-server-arm64.img
+
+>Preparing 4 GB image named /mnt/img/pipeline-iiab-ubuntu-21.04-server-arm64.img from ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz
+0+0 records in
+0+0 records out
+0 bytes copied, 0.000527105 s, 0.0 kB/s
+
+How to customize:
+Contents of the chroot image are availble at /mnt/img, use the runme.sh logic to introduce other files if needed in mkarm-image.sh 
+Commands to run within the changeroot are contained within runme.sh
+
+Should you enable kalite within your supplied local_vars file you should pre-populate sources/ with the en.zip file from ka-lite, this method saves space within the image not to mention bandwith with repeated running for differnt images.
+
+These image will boot just like the stock one, resizing to fit and forcing ubuntu to change the default password at first login. Wifi and ethernet should be available upon boot, but will wait to allow ssh connections as new ssh keys are being generated and other firstboot fuctions are being performed.
+
+/mnt/storage/pipeline-iiab-ubuntu-21.04-server-arm64.img created
+
+real	31m15.189s
+user	23m26.533s
+sys	7m47.668s
+
+Plus the time to extract the image about 3-4 mins, with /mnt/storage in the example being a sdcard in usb3 adaptor, ssd should be even faster.  
