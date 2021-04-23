@@ -27,15 +27,15 @@ echo "needsrestart"
 # issue
 
 cd iiab
-git pull http://github.com/jvonau/iiab gpg-key
-
 # workaround
 #add-apt-repository -y  ppa:ansible/ansible
 #rm /etc/apt/sources.list.d/ansible-ubuntu-ansible-*.list
 #sed '/apt-key adv/d' -i /opt/iiab/iiab/scripts/ansible
+#/opt/iiab/iiab/scripts/ansible
 #echo "git reset"
 #git reset --hard
 # end
+git pull http://github.com/jvonau/iiab gpg-key
 
 /opt/iiab/iiab-factory/iiab-upgrade
 
