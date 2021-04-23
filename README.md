@@ -4,7 +4,7 @@ Tool to create bootable IIAB Ubuntu images on RPi hardware, aimed at arm64 Ubunt
 How to use:
 mkarm-image \<size of image in GB> \<path to downloaded.img.xz> \<path to place the product and name of image>
 
-./mkarm-image.sh 4 ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz /mnt/img/pipeline-iiab-ubuntu-21.04-server-arm64.img
+sudo ./mkarm-image.sh 4 ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz /mnt/img/pipeline-iiab-ubuntu-21.04-server-arm64.img
 
 >Preparing 4 GB image named /mnt/img/pipeline-iiab-ubuntu-21.04-server-arm64.img from ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz
 0+0 records in
@@ -27,3 +27,8 @@ sys	7m47.668s
 
 Plus the time to extract the image about 3-4 mins, with /mnt/storage in the example being a sdcard in usb3 adaptor, ssd should be even faster.
 What you can't pre-seed nextcloud, wordpress, moodle, and mediawiki due to limitations of iiab's strategy.
+
+Tools
+mount-image is a tool to mount an image to inspect, modifiy setting, provides internet access to preform apt updates, or to update the image with the latest iiab code, subject to available space in the image.
+sudo ./mount-image.sh \<path to image ending in .img>
+Type 'exit' when you are done
