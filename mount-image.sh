@@ -12,7 +12,11 @@ sleep 2
 
 mkdir -p /mnt/img
 mount "$LOOP"p2 /mnt/img
-mount "$LOOP"p1 /mnt/img/boot/firmware
+if [ -d /mnt/img/boot/firmware ]; then
+    mount "$LOOP"p1 /mnt/img/boot/firmware
+else
+    mount "$LOOP"p1 /mnt/img/boot
+fi
 mount --bind /dev /mnt/img/dev
 mount --bind /sys /mnt/img/sys
 mount --bind /proc /mnt/img/proc
@@ -23,7 +27,11 @@ echo "ENTERING CHROOT"
 chroot /mnt/img
 
 sync
-umount /mnt/img/boot/firmware
+if [ -d /mnt/img/boot/firmware ]; then
+    umount /mnt/img/boot/firmware
+else
+    umount /mnt/img/boot
+fi
 umount /mnt/img/proc
 umount /mnt/img/sys
 umount /mnt/img/dev/pts >> /dev/null
