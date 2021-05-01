@@ -4,16 +4,16 @@ Tool to create bootable IIAB Ubuntu images on RPi hardware, aimed at arm64 Ubunt
 How to use:
 mkarm-image \<size of image in GB> \<path to downloaded.img.xz> \<path to place the product and name of image>
 
-sudo ./mkarm-image.sh 4 ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz /mnt/img/pipeline-iiab-ubuntu-21.04-server-arm64.img
+sudo ./mkarm-image.sh 4 ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz /mnt/storage/pipeline-iiab-ubuntu-21.04-server-arm64.img
 
->Preparing 4 GB image named /mnt/img/pipeline-iiab-ubuntu-21.04-server-arm64.img from ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz
+>Preparing 4 GB image named /mnt/storage/pipeline-iiab-ubuntu-21.04-server-arm64.img from ../ubuntu-21.04-preinstalled-server-arm64+raspi.img.xz
 0+0 records in
 0+0 records out
 0 bytes copied, 0.000527105 s, 0.0 kB/s
 
 How to customize:
 Contents of the chroot image are availble at /mnt/img, use the runme.sh logic to introduce other files if needed in mkarm-image.sh 
-Commands to run within the changeroot are contained within runme.sh
+Commands to run within the changeroot are contained within runme.sh Examples are proved, just copy to runme.sh
 
 Should you enable kalite within your supplied local_vars file you should pre-populate sources/ with the en.zip file from ka-lite, this method saves space within the image not to mention bandwith with repeated running for differnt images.
 
