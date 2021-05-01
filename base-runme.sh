@@ -26,17 +26,6 @@ apt -y purge needrestart
 echo "needsrestart"
 # issue
 
-cd iiab
-# workaround
-#add-apt-repository -y  ppa:ansible/ansible
-#rm /etc/apt/sources.list.d/ansible-ubuntu-ansible-*.list
-#sed '/apt-key adv/d' -i /opt/iiab/iiab/scripts/ansible
-#/opt/iiab/iiab/scripts/ansible
-#echo "git reset"
-#git reset --hard
-# end
-git pull http://github.com/jvonau/iiab gpg-key
-
 /opt/iiab/iiab-factory/iiab-upgrade
 
 # put back
@@ -44,5 +33,7 @@ apt -y install needrestart
 # cleanup
 rm /var/cache/apt/archives/*.deb
 # artifacts
-mv /etc/iiab/local_vars.yml /etc/iiab/local_vars.yml.base
+mv /etc/iiab/local_vars.yml /etc/iiab/local_vars.yml.builder
+cp /runme.sh /etc/iiab/builder.sh
 apt list | grep installed > /etc/iiab/debs.txt
+sed -i 's/^STAGE=.*/STAGE=3/' /etc/iiab/iiab.env
