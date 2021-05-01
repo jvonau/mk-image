@@ -65,6 +65,7 @@ echo "ENTERING CHROOT"
 chroot /mnt/img /runme.sh
 echo "out of chroot"
 sync
+rm /mnt/img/runme.sh
 umount /mnt/img/boot/firmware
 # undo bind mounted files
 if [ -f /mnt/img/tmp/en.zip ]; then
