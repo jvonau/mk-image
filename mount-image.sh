@@ -20,6 +20,9 @@ fi
 mount --bind /dev /mnt/img/dev
 mount --bind /sys /mnt/img/sys
 mount --bind /proc /mnt/img/proc
+mv /mnt/img/etc/resolv.conf /mnt/img/etc/resolv.conf.hold
+touch /mnt/img/etc/resolv.conf
+mount --bind /etc/resolv.conf /mnt/img/etc/resolv.conf
 }
 
 local_losetup
@@ -32,6 +35,9 @@ if [ -d /mnt/img/boot/firmware ]; then
 else
     umount /mnt/img/boot
 fi
+umount /mnt/img/etc/resolv.conf
+rm /mnt/img/etc/resolv.conf
+mv /mnt/img/etc/resolv.conf.hold /mnt/img/etc/resolv.conf
 umount /mnt/img/proc
 umount /mnt/img/sys
 umount /mnt/img/dev/pts >> /dev/null
