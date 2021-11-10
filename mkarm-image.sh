@@ -91,6 +91,7 @@ mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
 if [ -d apt_cache ]; then
     mkdir -p apt_cache/"${cache_name}"
     mount --bind apt_cache/"${cache_name}" "${MP}"/var/cache/apt/archives
+    cat "Binary::apt::APT::Keep-Downloaded-Packages \"1\";" > "${MP}"/etc/apt/apt.conf.d/99-keep
 fi
 # target of bind mounted files must exist
 if [ -f sources/en.zip ]; then
@@ -108,11 +109,8 @@ echo "ENTERING CHROOT"
 #chroot "${MP}"
 chroot "${MP}" /runme.sh
 echo "out of chroot"
-sync
 rm "${MP}"/runme.sh
 
-umount "${MP}"/boot/firmware || true
-umount "${MP}"/boot  || true
 # undo bind mounted files
 if [ -f "${MP}"/tmp/en.zip ]; then
     umount "${MP}"/tmp/en.zip
@@ -121,9 +119,21 @@ umount "${MP}"/etc/resolv.conf
 rm "${MP}"/etc/resolv.conf
 mv "${MP}"/etc/resolv.conf.hold "${MP}"/etc/resolv.conf
 
+if eval "$(mount | grep "${cache_name}")"; then
+    rm "${MP}"/etc/apt/apt.conf.d/99-keep
+    umount "${MP}"/var/cache/apt/archives
+fi
 # clean trash from iiab-refresh-wiki-docs
 rm -rf "${MP}"/tmp/*
 # end cleanup
+
+sync
+
+if eval "$(mount | grep "${MP}"/boot/firmware)"; then
+    umount "${MP}"/boot/firmware
+else
+    umount "${MP}"/boot
+fi
 umount "${MP}"/proc
 umount "${MP}"/sys
 umount "${MP}"/dev
