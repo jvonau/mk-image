@@ -4,42 +4,52 @@ SIZE=$1
 SOURCE=$2
 IMAGE=$3
 MP=/tmp/mkarm-mp
+cache_name=""
 rm -rf "${MP}"
 mkdir "${MP}"
 echo "$1 $2 $3"
 echo "Preparing $1 GB image named $3 from $2"
 #COMMON
-dd if=/dev/zero of="${IMAGE}" bs=1 count=0 seek="${SIZE}G"
-losetup -f "${IMAGE}"
-sleep 2
-LOOP=$(losetup | grep "${IMAGE}" | awk -F " " '{ print $1 }')
-echo "loop is $LOOP"
-sleep 2
-#
+mk_image(){
+    dd if=/dev/zero of="${IMAGE}" bs=1 count=0 seek="${SIZE}G"
+    losetup -f "${IMAGE}"
+    sleep 2
+    LOOP=$(losetup | grep "${IMAGE}" | awk -F " " '{ print $1 }')
+    echo "loop is $LOOP"
+    sleep 2
+}
 
 case "${SOURCE}" in
     *.xz)
+    mk_image
     xzcat -c "$SOURCE" | dd bs=4M of="${LOOP}" status=progress
     sync
     losetup -d "${LOOP}"
+    cache_name=$(basename "${SOURCE}" | sed s/.xz//)
         ;;
 
     *.zip)
+    mk_image
     unzip -p "${SOURCE}" | dd bs=4M of="${LOOP}" status=progress
     sync
     losetup -d "${LOOP}"
+    cache_name=$(basename "${SOURCE}" | sed s/.zip//)
         ;;
 
     *.gz)
+    mk_image
     gunzip -c if="${SOURCE}" | dd bs=4M of="${LOOP}" status=progress
     sync
     losetup -d "${LOOP}"
+    cache_name=$(basename "${SOURCE}" | sed s/.gz//)
         ;;
 
     *.img)
+    mk_image
     dd bs=4M if="${SOURCE}" of="${LOOP}" status=progress
     sync
     losetup -d "${LOOP}"
+    cache_name=$(basename "${SOURCE}" | sed s/.img//)
         ;;
 
     *)
@@ -78,6 +88,10 @@ mv "${MP}"/etc/resolv.conf "${MP}"/etc/resolv.conf.hold
 touch "${MP}"/etc/resolv.conf
 mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
 
+if [ -d apt_cache ]; then
+    mkdir -p apt_cache/"${cache_name}"
+    mount --bind apt_cache/"${cache_name}" "${MP}"/var/cache/apt/archives
+fi
 # target of bind mounted files must exist
 if [ -f sources/en.zip ]; then
     touch "${MP}"/tmp/en.zip
