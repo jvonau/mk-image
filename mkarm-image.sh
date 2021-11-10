@@ -67,6 +67,7 @@ sleep 2
 sync
 echo "resize $LOOP"
 resize2fs "${LOOP}p2"
+sync
 losetup -d "${LOOP}"
 
 losetup -P -f "${IMAGE}"
@@ -81,9 +82,10 @@ if [ -d "${MP}"/boot/firmware ]; then
 else
     mount "${LOOP}p1" "${MP}"/boot
 fi
-mount --bind /dev "${MP}"/dev
 mount --bind /sys "${MP}"/sys
-mount --bind /proc "${MP}"/proc
+mount -t proc proc "${MP}"/proc
+mount --bind /dev "${MP}"/dev
+mount --bind /dev/pts "${MP}"/dev/pts
 mv "${MP}"/etc/resolv.conf "${MP}"/etc/resolv.conf.hold
 touch "${MP}"/etc/resolv.conf
 mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
@@ -129,14 +131,15 @@ rm -rf "${MP}"/tmp/*
 
 sync
 
-if eval "$(mount | grep "${MP}"/boot/firmware)"; then
+if [ -d "${MP}"/boot/firmware ]; then
     umount "${MP}"/boot/firmware
 else
     umount "${MP}"/boot
 fi
-umount "${MP}"/proc
-umount "${MP}"/sys
+umount "${MP}"/dev/pts
 umount "${MP}"/dev
+umount "${MP}"/sys
+umount "${MP}"/proc
 umount "${MP}"
 losetup -d "${LOOP}"
 echo "$IMAGE created"
