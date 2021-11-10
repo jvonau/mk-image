@@ -78,7 +78,7 @@ bash
 /opt/iiab/iiab-factory/iiab-upgrade
 
 # cleanup
-rm /var/cache/apt/archives/*.deb
+#rm /var/cache/apt/archives/*.deb
 # artifacts
 mv /etc/iiab/local_vars.yml /etc/iiab/local_vars.yml.builder
 cp /runme.sh /etc/iiab/builder.sh

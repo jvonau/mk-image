@@ -2,37 +2,31 @@
 export DEBIAN_FRONTEND=noninteractive
 
 apt update
-apt install -y git wget curl whiptail software-properties-common
-mkdir /etc/iiab
-cd /etc/iiab
-wget https://raw.githubusercontent.com/jvonau/iiab/build/vars/local_vars_min_secure.yml -O local_vars.yml
-#echo "provision_install: True" >> /etc/iiab/local_vars.yml
-#echo "provision_active: True" >> /etc/iiab/local_vars.yml
-#echo "provision_enable: True" >> /etc/iiab/local_vars.yml
+apt install -y git wget curl
 
 mkdir /opt/iiab
 cd /opt/iiab
-git clone http://github.com/iiab/iiab-admin-console
+# adjust as needed
 git clone http://github.com/jvonau/iiab-factory
+git clone http://github.com/iiab/iiab-admin-console
 git clone http://github.com/iiab/iiab
 
-# Install iiab
+mkdir /etc/iiab
+# adjust as needed
+#cd /etc/iiab
+#wget https://raw.githubusercontent.com/jvonau/iiab/build/vars/local_vars_min_secure.yml -O local_vars.yml
+cp /opt/iiab/iiab/vars/local_vars_min.yml /etc/iiab/local_vars.yml
+
+# Install iiab or cp from iiab-factory
 curl https://raw.githubusercontent.com/iiab/iiab-factory/master/iiab > /usr/sbin/iiab
-chmod 0744 /usr/sbin/iiab
+chmod 0744 /usr/bin/iiab
 
-# another workaround2
-apt -y remove needrestart
-apt -y purge needrestart
-echo "needsrestart"
-# issue
-
+# adjust as needed /usr/bin/iiab
 /opt/iiab/iiab-factory/iiab-upgrade
 
-# put back
-apt -y install needrestart
 # cleanup
-rm /var/cache/apt/archives/*.deb
-# artifacts
+#rm /var/cache/apt/archives/*.deb
+# artifacts could reset stage counter at this point
 mv /etc/iiab/local_vars.yml /etc/iiab/local_vars.yml.builder
 cp /runme.sh /etc/iiab/builder.sh
 apt list | grep installed > /etc/iiab/debs.txt
