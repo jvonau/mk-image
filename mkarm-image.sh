@@ -3,105 +3,116 @@
 SIZE=$1
 SOURCE=$2
 IMAGE=$3
+MP=/tmp/mkarm-mp
+rm -rf "${MP}"
+mkdir "${MP}"
 echo "$1 $2 $3"
 echo "Preparing $1 GB image named $3 from $2"
-dd if=/dev/zero of=$IMAGE bs=1 count=0 seek=$1G
-losetup -f $IMAGE
+#COMMON
+dd if=/dev/zero of="${IMAGE}" bs=1 count=0 seek="${SIZE}G"
+losetup -f "${IMAGE}"
 sleep 2
-LOOP=`losetup | grep $IMAGE | awk -F " " '{ print $1 }'`
+LOOP=$(losetup | grep "${IMAGE}" | awk -F " " '{ print $1 }')
 echo "loop is $LOOP"
 sleep 2
+#
 
-if [ $SOURCE == *.xz ]; then
-    xzcat -c "$SOURCE" | dd bs=4M of="$LOOP" status=progress
+case "${SOURCE}" in
+    *.xz)
+    xzcat -c "$SOURCE" | dd bs=4M of="${LOOP}" status=progress
     sync
+    losetup -d "${LOOP}"
+        ;;
 
-    fdisk $LOOP <<EOF
-d
-
-n
-p
-
-
-n
-
-w
-EOF
+    *.zip)
+    unzip -p "${SOURCE}" | dd bs=4M of="${LOOP}" status=progress
     sync
-    losetup -d $LOOP
-    sleep 2
-    losetup -P -f $IMAGE
-    LOOP=`losetup | grep $IMAGE | awk -F " " '{ print $1 }'`
-else
-    dd if=$SOURCE of=$LOOP
-    losetup -d $LOOP
-    sleep 2
-    losetup -P -f $IMAGE
-    LOOP=`losetup | grep $IMAGE | awk -F " " '{ print $1 }'`
-    growpart $LOOPp2
-fi
-sleep 2
-echo "loop is $LOOP"
-e2fsck -f "$LOOP"p2
-resize2fs "$LOOP"p2
-losetup -d "$LOOP"
-sleep 2
+    losetup -d "${LOOP}"
+        ;;
 
-losetup -P -f $IMAGE
-sleep 2
-LOOP=`losetup | grep $IMAGE | awk -F " " '{ print $1 }'`
-e2fsck -f "$LOOP"p2
-echo "loop is $LOOP"
+    *.gz)
+    gunzip -c if="${SOURCE}" | dd bs=4M of="${LOOP}" status=progress
+    sync
+    losetup -d "${LOOP}"
+        ;;
 
-mkdir -p /mnt/img
-mount "$LOOP"p2 /mnt/img
-if [ -d /mnt/img/boot/firmware ]; then
-    mount "$LOOP"p1 /mnt/img/boot/firmware
+    *.img)
+    dd bs=4M if="${SOURCE}" of="${LOOP}" status=progress
+    sync
+    losetup -d "${LOOP}"
+        ;;
+
+    *)
+    echo "unknown extention"
+    exit 1
+        ;;
+esac
+
+sleep 2
+losetup -P -f "${IMAGE}"
+LOOP=$(losetup | grep "${IMAGE}" | awk -F " " '{ print $1 }')
+echo "growpart $LOOP"
+growpart "${LOOP}" 2
+sleep 2
+sync
+echo "resize $LOOP"
+resize2fs "${LOOP}p2"
+losetup -d "${LOOP}"
+
+losetup -P -f "${IMAGE}"
+LOOP=$(losetup | grep "${IMAGE}" | awk -F " " '{ print $1 }')
+echo "loop is $LOOP"
+e2fsck -f "${LOOP}p2"
+sync
+
+mount "${LOOP}p2" "${MP}"
+if [ -d "${MP}"/boot/firmware ]; then
+    mount "${LOOP}p1" "${MP}"/boot/firmware
 else
-    mount "$LOOP"p1 /mnt/img/boot
+    mount "${LOOP}p1" "${MP}"/boot
 fi
-mount --bind /dev /mnt/img/dev
-mount --bind /sys /mnt/img/sys
-mount --bind /proc /mnt/img/proc
-mv /mnt/img/etc/resolv.conf /mnt/img/etc/resolv.conf.hold
-touch /mnt/img/etc/resolv.conf
-mount --bind /etc/resolv.conf /mnt/img/etc/resolv.conf
+mount --bind /dev "${MP}"/dev
+mount --bind /sys "${MP}"/sys
+mount --bind /proc "${MP}"/proc
+mv "${MP}"/etc/resolv.conf "${MP}"/etc/resolv.conf.hold
+touch "${MP}"/etc/resolv.conf
+mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
 
 # target of bind mounted files must exist
 if [ -f sources/en.zip ]; then
-    touch /mnt/img/tmp/en.zip
-    mount --bind sources/en.zip /mnt/img/tmp/en.zip
+    touch "${MP}"/tmp/en.zip
+    mount --bind sources/en.zip "${MP}"/tmp/en.zip
 fi
 if [ -f sources/local_vars.yml ]; then
-    mkdir -p /mnt/img/etc/iiab/install-flags
-    cp sources/local_vars.yml /mnt/img/etc/iiab/
+    mkdir -p "${MP}"/etc/iiab/install-flags
+    cp sources/local_vars.yml "${MP}"/etc/iiab/
 fi
-cp -f runme.sh  /mnt/img/runme.sh
-chmod 0755 /mnt/img/runme.sh
+cp -f runme.sh  "${MP}"/runme.sh
+chmod 0755 "${MP}"/runme.sh
 echo "ENTERING CHROOT"
 #echo "exit to leave"
-#chroot /mnt/img
-chroot /mnt/img /runme.sh
+#chroot "${MP}"
+chroot "${MP}" /runme.sh
 echo "out of chroot"
 sync
-rm /mnt/img/runme.sh
+rm "${MP}"/runme.sh
 
-umount /mnt/img/boot/firmware || true
-umount /mnt/img/boot  || true
+umount "${MP}"/boot/firmware || true
+umount "${MP}"/boot  || true
 # undo bind mounted files
-if [ -f /mnt/img/tmp/en.zip ]; then
-    umount /mnt/img/tmp/en.zip
+if [ -f "${MP}"/tmp/en.zip ]; then
+    umount "${MP}"/tmp/en.zip
 fi
-umount /mnt/img/etc/resolv.conf
-rm /mnt/img/etc/resolv.conf
-mv /mnt/img/etc/resolv.conf.hold /mnt/img/etc/resolv.conf
+umount "${MP}"/etc/resolv.conf
+rm "${MP}"/etc/resolv.conf
+mv "${MP}"/etc/resolv.conf.hold "${MP}"/etc/resolv.conf
 
 # clean trash from iiab-refresh-wiki-docs
-rm -rf /mnt/img/tmp/*
+rm -rf "${MP}"/tmp/*
 # end cleanup
-umount /mnt/img/proc
-umount /mnt/img/sys
-umount /mnt/img/dev
-umount /mnt/img
-losetup -d "$LOOP"
+umount "${MP}"/proc
+umount "${MP}"/sys
+umount "${MP}"/dev
+umount "${MP}"
+losetup -d "${LOOP}"
 echo "$IMAGE created"
