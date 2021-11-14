@@ -65,7 +65,10 @@ echo "growpart $LOOP"
 growpart "${LOOP}" 2
 sleep 2
 sync
+
 echo "resize $LOOP"
+e2fsck -f "${LOOP}p2"
+sync
 resize2fs "${LOOP}p2"
 sync
 losetup -d "${LOOP}"
