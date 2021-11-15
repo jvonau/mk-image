@@ -96,7 +96,9 @@ mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
 if [ -d apt_cache ]; then
     mkdir -p apt_cache/"${cache_name}"
     mount --bind apt_cache/"${cache_name}" "${MP}"/var/cache/apt/archives
-    cat "Binary::apt::APT::Keep-Downloaded-Packages \"1\";" > "${MP}"/etc/apt/apt.conf.d/99-keep
+    cat << EOF > "${MP}"/etc/apt/apt.conf.d/99-keep
+Binary::apt::APT::Keep-Downloaded-Packages 1;
+EOF
 fi
 # target of bind mounted files must exist
 if [ -f sources/en.zip ]; then
