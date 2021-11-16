@@ -11,7 +11,7 @@ echo "$1 $2 $3"
 echo "Preparing $1 GB image named $3 from $2"
 #COMMON
 mk_image(){
-    dd if=/dev/zero of="${IMAGE}" bs=1 count=0 seek="${SIZE}G"
+    dd if=/dev/zero of="${IMAGE}" bs=1 count=0 seek="${SIZE}G" status=progress
     losetup -f "${IMAGE}"
     sleep 2
     LOOP=$(losetup | grep "${IMAGE}" | awk -F " " '{ print $1 }')
@@ -72,10 +72,11 @@ sync
 resize2fs "${LOOP}p2"
 sync
 losetup -d "${LOOP}"
+sleep 2
 
 losetup -P -f "${IMAGE}"
 LOOP=$(losetup | grep "${IMAGE}" | awk -F " " '{ print $1 }')
-echo "loop is $LOOP"
+echo "working loop is $LOOP"
 e2fsck -f "${LOOP}p2"
 sync
 
@@ -93,13 +94,19 @@ mv "${MP}"/etc/resolv.conf "${MP}"/etc/resolv.conf.hold
 touch "${MP}"/etc/resolv.conf
 mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
 
+#/usr/share/doc/apt/examples/configure-index varies by distro
+# ubuntu apt::keep-downloaded-packages "<BOOL>";
+# debian Binary::apt::APT::Keep-Downloaded-Packages "<BOOL>";
+# handle this by OS in runme.sh
 if [ -d apt_cache ]; then
+    use_cache=1
     mkdir -p apt_cache/"${cache_name}"
     mount --bind apt_cache/"${cache_name}" "${MP}"/var/cache/apt/archives
-    cat << EOF > "${MP}"/etc/apt/apt.conf.d/99-keep
-Binary::apt::APT::Keep-Downloaded-Packages 1;
-EOF
+#    cat << EOF > "${MP}"/etc/apt/apt.conf.d/99-keep
+#Binary::apt::APT::Keep-Downloaded-Packages 1;
+#EOF
 fi
+
 # target of bind mounted files must exist
 if [ -f sources/en.zip ]; then
     touch "${MP}"/tmp/en.zip
@@ -126,8 +133,10 @@ umount "${MP}"/etc/resolv.conf
 rm "${MP}"/etc/resolv.conf
 mv "${MP}"/etc/resolv.conf.hold "${MP}"/etc/resolv.conf
 
-if eval "$(mount | grep "${cache_name}")"; then
-    rm "${MP}"/etc/apt/apt.conf.d/99-keep
+#if eval "$(mount | grep "${cache_name}")"; then
+if [ "${use_cache}" = "1" ]; then
+    echo "cache name ${cache_name}"
+    rm "${MP}"/etc/apt/apt.conf.d/01-keep
     umount "${MP}"/var/cache/apt/archives
 fi
 # clean trash from iiab-refresh-wiki-docs
