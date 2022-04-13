@@ -23,6 +23,9 @@ mount --bind /proc /mnt/img/proc
 mv /mnt/img/etc/resolv.conf /mnt/img/etc/resolv.conf.hold
 touch /mnt/img/etc/resolv.conf
 mount --bind /etc/resolv.conf /mnt/img/etc/resolv.conf
+if [ $(uname -m) = "x86_64" ];then
+    cp /usr/bin/qemu-arm-static /mnt/img/usr/bin/
+fi
 }
 
 local_losetup
@@ -34,6 +37,9 @@ if [ -d /mnt/img/boot/firmware ]; then
     umount /mnt/img/boot/firmware
 else
     umount /mnt/img/boot
+fi
+if [ -f /usr/bin/qemu-arm-static ]; then
+    rm /usr/bin/qemu-arm-static
 fi
 umount /mnt/img/etc/resolv.conf
 rm /mnt/img/etc/resolv.conf
