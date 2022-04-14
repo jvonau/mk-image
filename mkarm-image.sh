@@ -93,6 +93,9 @@ mount --bind /dev/pts "${MP}"/dev/pts
 mv "${MP}"/etc/resolv.conf "${MP}"/etc/resolv.conf.hold
 touch "${MP}"/etc/resolv.conf
 mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
+if [ $(uname -m) = "x86_64" ];then
+    cp /usr/bin/qemu-arm-static /mnt/img/usr/bin/
+fi
 
 #/usr/share/doc/apt/examples/configure-index varies by distro
 # ubuntu apt::keep-downloaded-packages "<BOOL>";
@@ -129,6 +132,7 @@ rm "${MP}"/runme.sh
 if [ -f "${MP}"/tmp/en.zip ]; then
     umount "${MP}"/tmp/en.zip
 fi
+
 umount "${MP}"/etc/resolv.conf
 rm "${MP}"/etc/resolv.conf
 mv "${MP}"/etc/resolv.conf.hold "${MP}"/etc/resolv.conf
@@ -139,6 +143,10 @@ if [ "${use_cache}" = "1" ]; then
     rm "${MP}"/etc/apt/apt.conf.d/01-keep
     umount "${MP}"/var/cache/apt/archives
 fi
+if [ -f "${MP}"/usr/bin/qemu-arm-static ]; then
+    rm "${MP}"/usr/bin/qemu-arm-static
+fi
+
 # clean trash from iiab-refresh-wiki-docs
 rm -rf "${MP}"/tmp/*
 # end cleanup

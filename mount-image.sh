@@ -38,8 +38,8 @@ if [ -d /mnt/img/boot/firmware ]; then
 else
     umount /mnt/img/boot
 fi
-if [ -f /usr/bin/qemu-arm-static ]; then
-    rm /usr/bin/qemu-arm-static
+if [ -f /mnt/img/usr/bin/qemu-arm-static ]; then
+    rm /mnt/img/bin/qemu-arm-static
 fi
 umount /mnt/img/etc/resolv.conf
 rm /mnt/img/etc/resolv.conf
