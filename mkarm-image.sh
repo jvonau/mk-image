@@ -94,7 +94,7 @@ mv "${MP}"/etc/resolv.conf "${MP}"/etc/resolv.conf.hold
 touch "${MP}"/etc/resolv.conf
 mount --bind /etc/resolv.conf "${MP}"/etc/resolv.conf
 if [ $(uname -m) = "x86_64" ];then
-    cp /usr/bin/qemu-arm-static /mnt/img/usr/bin/
+    cp /usr/bin/qemu-arm-static "${MP}"/usr/bin/
 fi
 
 #/usr/share/doc/apt/examples/configure-index varies by distro
@@ -132,7 +132,6 @@ rm "${MP}"/runme.sh
 if [ -f "${MP}"/tmp/en.zip ]; then
     umount "${MP}"/tmp/en.zip
 fi
-
 umount "${MP}"/etc/resolv.conf
 rm "${MP}"/etc/resolv.conf
 mv "${MP}"/etc/resolv.conf.hold "${MP}"/etc/resolv.conf
